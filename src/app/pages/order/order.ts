@@ -117,6 +117,15 @@ export class Order {
           speed
         });
         this.isLoading.set(false);
+
+        // Приближаем карту к маршруту, учитывая header и сайдбар
+        const bounds = this.mapRoute.getBounds();
+        if (bounds) {
+          this.map.setBounds(bounds, {
+            checkZoomRange: true,
+            zoomMargin: [110, 0, 0, 400]  // [top для header, right, bottom, left для сайдбара]
+          });
+        }
       } catch (err) {
         this.failedCalculation();
       }
