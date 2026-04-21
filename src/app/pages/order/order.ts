@@ -3,6 +3,7 @@ import { Header } from '../../header/header';
 import { DELIVERY_SIZES, DELIVERY_SPEEDS } from './order.config';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UpperCasePipe } from '@angular/common';
+import { DeliveryApi } from '../../services/delivery-api';
 
 declare var ymaps: any;
 
@@ -24,8 +25,9 @@ export class Order {
 
   public orderId: any = signal(null);
   public calculationResult: any = signal(null);
+  public isLoading: any = signal(false);
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(private formBuilder: FormBuilder, private deliveryApi: DeliveryApi) {
     this.routeForm = this.formBuilder.group({
       from: ['', Validators.required],
       to: ['', Validators.required],
@@ -63,8 +65,10 @@ export class Order {
 
   public calculate() {
     this.calculationResult.set(null);
+    this.isLoading.set(true);
 
     if (!this.map || this.routeForm.invalid) {
+      this.isLoading.set(false);
       return;
     }
 
@@ -112,6 +116,7 @@ export class Order {
           total,
           speed
         });
+        this.isLoading.set(false);
       } catch (err) {
         this.failedCalculation();
       }
@@ -122,6 +127,7 @@ export class Order {
 
   private failedCalculation() {
     this.calculationResult.set(null);
+    this.isLoading.set(false);
     alert('Не удалось построить маршрут. Проверьте адреса и выбранные параметры.');
   }
 
@@ -148,8 +154,15 @@ export class Order {
       createdAt: new Date().toISOString()
     };
 
-    console.log(payload);
-    this.orderId.set(1);
+    this.deliveryApi.createDelivery(payload).subscribe((response) => {
+      if ('error' in response) {
+        alert(response.error);
+        return;
+      }
+
+      this.orderId.set(response.id);
+    });
+
   }
 
 }
