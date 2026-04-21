@@ -154,7 +154,9 @@ export class Order {
       createdAt: new Date().toISOString()
     };
 
+    this.isLoading.set(true);
     this.deliveryApi.createDelivery(payload).subscribe((response) => {
+      this.isLoading.set(false);
       if ('error' in response) {
         alert(response.error);
         return;
