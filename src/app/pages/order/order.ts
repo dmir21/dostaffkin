@@ -118,12 +118,13 @@ export class Order {
         });
         this.isLoading.set(false);
 
-        // Приближаем карту к маршруту, учитывая header и сайдбар
+        // Приближаем карту к маршруту с адаптивными отступами
         const bounds = this.mapRoute.getBounds();
         if (bounds) {
+          const zoomMargin = this.getAdaptiveZoomMargin();
           this.map.setBounds(bounds, {
             checkZoomRange: true,
-            zoomMargin: [110, 0, 0, 400]  // [top для header, right, bottom, left для сайдбара]
+            zoomMargin: zoomMargin
           });
         }
       } catch (err) {
@@ -132,6 +133,21 @@ export class Order {
     });
 
     this.mapRoute.model.events.add('requestfail', () => this.failedCalculation());
+  }
+
+  private getAdaptiveZoomMargin(): number[] {
+    const width = window.innerWidth;
+    
+    if (width < 768) {
+      // На мобильных устройствах
+      return [60, 0, 0, 40];
+    } else if (width < 1200) {
+      // На планшетах
+      return [100, 0, 0, 360];
+    } else {
+      // На десктопе
+      return [110, 0, 0, 420];
+    }
   }
 
   private failedCalculation() {
